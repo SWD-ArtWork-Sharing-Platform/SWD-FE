@@ -1,19 +1,26 @@
-import ECommerce from "@/components/Dashboard/E-commerce";
 import { Metadata } from "next";
-import DefaultLayout from "@/components/Layouts/DefaultLayout";
+import ShopLayout from "@/components/ShopLayout/ShopLayout";
+import Carousel from "@/components/HomePage/Carousel";
+import TrendingProduct from "@/components/HomePage/TrendingProduct";
+import TopCreator from "@/components/HomePage/TopCreator";
+import HomeCategories from "@/components/HomePage/HomeCategories";
 
 export const metadata: Metadata = {
-  title:
-    "Next.js E-commerce Dashboard | TailAdmin - Next.js Dashboard Template",
-  description: "This is Next.js Home for TailAdmin Dashboard Template",
+  title: "Artvista",
+  description: "This is Home Page for Artvista",
 };
 
 export default function Home() {
   return (
     <>
-      <DefaultLayout>
-        <ECommerce />
-      </DefaultLayout>
+      <ShopLayout>
+        <div>
+          <Carousel />
+          <TrendingProduct />
+          <TopCreator />
+          <HomeCategories />
+        </div>
+      </ShopLayout>
     </>
   );
 }
