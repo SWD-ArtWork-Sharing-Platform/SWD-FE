@@ -10,11 +10,9 @@ export default function ShopLayout({
 }) {
   return (
     <>
-      <div className="bg-neutral-dark mq450:gap-[74px_0px] mq750:gap-[74px_0px] relative flex w-full flex-col items-center justify-start gap-[74px_0px] overflow-hidden tracking-[normal]">
+      <div className="mq450:gap-[74px_0px] mq750:gap-[74px_0px] relative flex w-full flex-col items-center justify-start gap-[20px_0px] overflow-hidden bg-neutral-dark tracking-[normal]">
         <HeaderShop />
-        <main>
-          <div>{children}</div>
-        </main>
+        <main>{children}</main>
         <FooterShop />
       </div>
     </>

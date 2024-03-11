@@ -20,6 +20,7 @@ const config: Config = {
     },
     extend: {
       colors: {
+        "chip-fill": "rgba(217, 217, 217, 0.2)",
         current: "currentColor",
         transparent: "transparent",
         white: "#FFFFFF",
