@@ -3,6 +3,7 @@ import { createContext, ReactNode, useEffect, useReducer } from "react";
 import axiosInstances from "@/utils/axios";
 import { isValidToken, setSession } from "@/utils/jwt";
 import { getUserInfo, setUserInfo } from "@/utils/utils";
+import sweetAlert from "@/utils/sweetAlert";
 // @types
 import {
   ActionMap,
@@ -12,6 +13,7 @@ import {
 } from "@/types/authentication";
 import { Role } from "@/utils/accountRole";
 import { useRouter } from "next/navigation";
+import useAppContext from "@/hooks/useAppContext";
 
 // ----------------------------------------------------------------------
 
@@ -94,7 +96,7 @@ const AuthContext = createContext<JWTContextType | null>(null);
 function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [state, dispatch] = useReducer(JWTReducer, initialState);
-  console.log("state", state);
+  const { enableLoading, disableLoading } = useAppContext();
 
   useEffect(() => {
     const initialize = async () => {
@@ -105,7 +107,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
           setSession(accessToken);
 
           const user = JSON.parse(userRaw);
-          console.log("hahaa", accessToken, user);
 
           dispatch({
             type: Types.Initial,
@@ -149,41 +150,62 @@ function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (username: string, password: string) => {
-    const response = await axiosInstances.auth.post("/auth/login", {
-      username,
-      password,
-    });
-
-    console.log(response);
-
-    if (
-      response.data.isSuccess &&
-      response.data.result != null &&
-      response.data.result.user != null
-    ) {
-      const { id, name, email, phoneNumber, role } = response.data.result.user;
-
-      const user = {
-        id: id,
-        name: name,
-        email: email,
-        phoneNumber: phoneNumber,
-        role: role,
-      };
-
-      const accessToken = response.data.result.token;
-
-      setSession(accessToken);
-      setUserInfo(user);
-
-      dispatch({
-        type: Types.Login,
-        payload: {
-          user,
-        },
+    try {
+      enableLoading();
+      const response = await axiosInstances.auth.post("/auth/login", {
+        username,
+        password,
       });
 
-      router.push("/");
+      if (
+        response.data.isSuccess &&
+        response.data.result != null &&
+        response.data.result.user != null
+      ) {
+        const { id, name, email, phoneNumber, role } =
+          response.data.result.user;
+
+        const user = {
+          id: id,
+          name: name,
+          email: email,
+          phoneNumber: phoneNumber,
+          role: role,
+        };
+
+        const accessToken = response.data.result.token;
+
+        setSession(accessToken);
+        setUserInfo(user);
+
+        dispatch({
+          type: Types.Login,
+          payload: {
+            user,
+          },
+        });
+
+        sweetAlert.alertSuccess("Sign In Successfully", "", 1200, 20);
+        router.push("/");
+      } else {
+        disableLoading();
+        sweetAlert.alertFailed(
+          `Login failed.`,
+          ` Please check your email and password and try again.`,
+          1200,
+          20,
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      disableLoading();
+      sweetAlert.alertFailed(
+        `Login failed.`,
+        ` Please check your email and password and try again.`,
+        4000,
+        22,
+      );
+      router.push("/signin");
     }
   };
 
@@ -195,6 +217,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     role: string,
     address: string,
   ) => {
+    enableLoading();
     const response = await axiosInstances.auth.post("/auth/register", {
       email,
       password,
@@ -204,10 +227,20 @@ function AuthProvider({ children }: { children: ReactNode }) {
       address,
     });
 
-    console.log(response);
-
-    if (response.data.isSuccess && response.data.result.succeeded) {
-      localStorage.setItem("REGISTER_CONFIRMING", "true");
+    if (
+      response.data.isSuccess &&
+      response.data.result.succeeded &&
+      response.data.result.succeeded
+    ) {
+      localStorage.setItem(
+        "REGISTER_CONFIRMING_USER",
+        JSON.stringify({
+          email,
+          password,
+        }),
+      );
+      disableLoading();
+      router.push("/signup/info");
     }
 
     if (
@@ -215,47 +248,36 @@ function AuthProvider({ children }: { children: ReactNode }) {
       !response.data.result.succeeded &&
       response.data.result.errors[0] != null
     ) {
+      disableLoading();
       localStorage.setItem(
         "REGISTER_CONFIRMING_ERROR",
         response.data.result.errors[0].description,
       );
     }
+  };
 
-    setTimeout(() => {
-      login(email, password);
-    }, 5000);
-
-    setTimeout(() => {
-      if (localStorage.getItem("accessToken") != null) {
-        login(email, password);
-      }
-    }, 8000);
-
-    setTimeout(() => {
-      if (localStorage.getItem("accessToken") != null) {
-        login(email, password);
-      }
-    }, 10000);
-
-    setTimeout(() => {
-      if (localStorage.getItem("accessToken") != null) {
-        login(email, password);
-      }
-    }, 15000);
-
-    // const { accessToken, user } = response.data;
-    // window.localStorage.setItem("accessToken", accessToken);
-    // dispatch({
-    //   type: Types.Register,
-    //   payload: {
-    //     user,
-    //   },
-    // });
+  const assignRole = async (
+    email: string,
+    password: string,
+    name: string,
+    phoneNumber: string,
+    role: string,
+    address: string,
+  ) => {
+    const response = await axiosInstances.auth.post("/auth/AssignRole", {
+      email,
+      password,
+      name,
+      phoneNumber,
+      role,
+      address,
+    });
   };
 
   const logout = async () => {
     setSession(null);
     setUserInfo({});
+    localStorage.removeItem("USER_INFO");
     dispatch({ type: Types.Logout });
     router.push("/");
   };

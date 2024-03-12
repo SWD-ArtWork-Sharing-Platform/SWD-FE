@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Form, Input, Select } from "antd";
 import { useFormik } from "formik";
@@ -7,12 +7,16 @@ import GuestGuard from "@/guards/GuestGuard";
 import useAuth from "@/hooks/useAuth";
 import Welcomeframe from "../signup/welcomeframe";
 import FrameComponentSignin from "./frame-component-signin";
+import Loading from "@/components/Loading/Loading";
+import useAppContext from "@/hooks/useAppContext";
 
 const SignIn = (props: {}) => {
   const router = useRouter();
   const formItemLayout = {};
   const [form] = Form.useForm();
   const { login } = useAuth();
+  const [loading, setLoading] = useState<boolean>(false);
+  const { isLoading } = useAppContext();
 
   const formik = useFormik({
     enableReinitialize: true,
@@ -21,12 +25,14 @@ const SignIn = (props: {}) => {
       password: "",
     },
     onSubmit: (values) => {
+      //setLoading(true);
       login(values.email, values.password);
     },
   });
 
   return (
     <GuestGuard>
+      <Loading loading={isLoading} />
       <div className="text-lightslategray font-barlow mq800:gap-[0px_24px] mq1325:flex-wrap relative flex w-full min-w-full flex-row items-start justify-start gap-[0px_49px] overflow-hidden bg-neutral-white text-left text-base tracking-[normal]">
         <Welcomeframe propMargin="0" />
         <div className="mq800:pt-[31px] mq800:box-border mq800:min-w-full mq1325:flex-1 mq1125:pt-12 mq1125:box-border box-border flex w-[632px] min-w-[632px] max-w-full flex-col items-start justify-start px-0 pb-0 pt-[20px]">
