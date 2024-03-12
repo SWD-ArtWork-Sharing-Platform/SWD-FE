@@ -1,18 +1,22 @@
 "use client";
+
 import { AuthProvider } from "@/contexts/JWTContext";
-import SignIn from "./SignIn";
+import GuestGuard from "@/guards/GuestGuard";
+import SignUpInfoScreen from "./SignUpInfoScreen";
 import { AppProvider } from "@/contexts/AppContext";
 
-const SignInAuth = (props: {}) => {
+const SignUpAuth = (props: {}) => {
   return (
     <>
       <AppProvider>
         <AuthProvider>
-          <SignIn />
+          <GuestGuard>
+            <SignUpInfoScreen />
+          </GuestGuard>
         </AuthProvider>
       </AppProvider>
     </>
   );
 };
 
-export default SignInAuth;
+export default SignUpAuth;

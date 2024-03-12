@@ -1,14 +1,18 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FrameComponent1 from "./frame-component1";
 import { Form, Input, Select } from "antd";
 import { useFormik } from "formik";
 import TextArea from "antd/es/input/TextArea";
 import Welcomeframe2 from "./welcomeframe2";
+import useAuth from "@/hooks/useAuth";
+import Loading from "@/components/Loading/Loading";
+import useAppContext from "@/hooks/useAppContext";
+import sweetAlert from "@/utils/sweetAlert";
 
-const SignUp = (props: {}) => {
+const SignUpInfoScreen = (props: {}) => {
   var router = useRouter();
   const [squareCheckboxSolidChecked, setSquareCheckboxSolidChecked] =
     useState(false);
@@ -18,6 +22,43 @@ const SignUp = (props: {}) => {
   const [confirmEmailSuccesful, setConfirmEmailSuccesful] = useState(false);
   const formItemLayout = {};
   const [form] = Form.useForm();
+  const { login, register, isAuthenticated } = useAuth();
+  const { isLoading, disableLoading } = useAppContext();
+
+  useEffect(() => {
+    var registerError = localStorage.getItem("REGISTER_CONFIRMING_ERROR");
+    var userJson = localStorage.getItem("REGISTER_CONFIRMING_USER");
+    if (registerError != null) {
+      localStorage.removeItem("REGISTER_CONFIRMING_ERROR");
+      localStorage.removeItem("REGISTER_CONFIRMING_USER");
+      sweetAlert.alertFailed(
+        "Sign Up Failed",
+        `This email has already taken`,
+        2500,
+        22,
+      );
+    } else if (userJson != null) {
+      setConfirmEmailMode(true);
+      disableLoading();
+      localStorage.removeItem("REGISTER_CONFIRMING_USER");
+      let user = JSON.parse(userJson);
+      setTimeout(() => {
+        if (!isAuthenticated) {
+          login(user.email, user.password);
+        }
+      }, 5000);
+      setTimeout(() => {
+        if (!isAuthenticated) {
+          login(user.email, user.password);
+        }
+      }, 8000);
+      setTimeout(() => {
+        if (!isAuthenticated) {
+          login(user.email, user.password);
+        }
+      }, 12000);
+    }
+  }, [isLoading]);
 
   const formik = useFormik({
     enableReinitialize: true,
@@ -30,13 +71,26 @@ const SignUp = (props: {}) => {
       role: "",
     },
 
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       if (squareCheckboxSolidChecked) {
         var role = localStorage.getItem("signuprole") ?? "";
         values.role = role?.toUpperCase();
-        // setConfirmEmailMode(true);
         console.log(values);
+        await register(
+          values.email,
+          values.password,
+          values.name,
+          values.phoneNumber,
+          values.role,
+          values.address,
+        );
       } else {
+        sweetAlert.alertInfo(
+          "",
+          "You need to agree the terms & conditions",
+          2500,
+          20,
+        );
       }
     },
   });
@@ -336,7 +390,7 @@ const SignUp = (props: {}) => {
                           className="hover:bg-blueviolet box-border flex w-full max-w-full flex-1 cursor-pointer flex-row items-start justify-center overflow-hidden whitespace-nowrap rounded-md bg-primary-colour px-5 py-[21px] [border:none]"
                         >
                           <div className="font-barlow relative flex w-full items-center justify-center text-center text-lg font-medium text-neutral-white">
-                            Register Account
+                            Sign Up
                           </div>
                         </button>
                       </Form.Item>
@@ -363,7 +417,7 @@ const SignUp = (props: {}) => {
                           src="/images/shop/SignUpPage/2/flatcoloriconsgoogle.svg"
                         />
                         <div className="relative z-[1] w-full self-stretch pl-5 font-medium">
-                          Register with Google
+                          Sign Up with Google
                         </div>
                       </div>
                     </div>
@@ -377,81 +431,84 @@ const SignUp = (props: {}) => {
     );
   }
   return (
-    <div className="relative flex h-screen w-full flex-row items-start justify-start overflow-hidden bg-neutral-white tracking-[normal]">
-      <main className="text-neutral-black font-barlow absolute bottom-[0rem] left-[0rem] right-[0rem] top-[0rem] !m-[0] box-border flex h-full w-full max-w-full flex-row items-center justify-center overflow-hidden bg-[url('/images/shop/SignUpPage/account-frame@3x.png')] bg-cover bg-[top] bg-no-repeat px-[1.25rem] py-[1rem] text-center text-[2.5rem]">
-        {!confirmEmailSuccesful ? (
-          <div className="rounded-mini mq450:gap-[1.75rem_0rem] box-border flex w-[50rem] max-w-full shrink-0 flex-col items-start justify-start gap-[3.5rem_0rem] overflow-hidden bg-neutral-white pb-[2rem] pl-[1.375rem] pr-[1.313rem] pt-[2.625rem]">
-            <div className="flex flex-row items-start justify-center self-stretch">
-              <img
-                className="relative h-[8rem] w-[8rem] shrink-0 overflow-hidden"
-                loading="lazy"
-                alt=""
-                src="/images/shop/SignUpPage/2/rimailunreadfill.svg"
-              />
-            </div>
-            <div className="mq750:gap-[1.5rem_0rem] flex max-w-full flex-col items-center justify-start gap-[3rem_0rem] self-stretch">
-              <div className="mq750:gap-[1.25rem_0rem] flex flex-col items-center justify-start gap-[2.5rem_0rem] self-stretch">
-                <h2 className="font-inherit mq450:text-[1.5rem] mq450:leading-[0.875rem] mq750:text-[2rem] mq750:leading-[1.188rem] relative m-0 inline-block text-inherit font-semibold leading-[1.5rem]">
-                  Verify by Mail
-                </h2>
-                <div className="text-gray-400 mq450:text-[1.188rem] mq450:leading-[1.75rem] relative self-stretch text-[1.5rem] font-medium leading-[2.219rem]">
-                  <p className="m-0">
-                    Please check your mail and follow the instruction to
-                    activate your account. If you did not receive the mail, or
-                    it has expired, you can resend another one.
-                  </p>
+    <>
+      <Loading loading={isLoading} />
+      <div className="relative flex h-screen w-full flex-row items-start justify-start overflow-hidden bg-neutral-white tracking-[normal]">
+        <main className="text-neutral-black font-barlow absolute bottom-[0rem] left-[0rem] right-[0rem] top-[0rem] !m-[0] box-border flex h-full w-full max-w-full flex-row items-center justify-center overflow-hidden bg-[url('/images/shop/SignUpPage/account-frame@3x.png')] bg-cover bg-[top] bg-no-repeat px-[1.25rem] py-[1rem] text-center text-[2.5rem]">
+          {!confirmEmailSuccesful ? (
+            <div className="rounded-mini mq450:gap-[1.75rem_0rem] box-border flex w-[50rem] max-w-full shrink-0 flex-col items-start justify-start gap-[3.5rem_0rem] overflow-hidden bg-neutral-white pb-[2rem] pl-[1.375rem] pr-[1.313rem] pt-[2.625rem]">
+              <div className="flex flex-row items-start justify-center self-stretch">
+                <img
+                  className="relative h-[8rem] w-[8rem] shrink-0 overflow-hidden"
+                  loading="lazy"
+                  alt=""
+                  src="/images/shop/SignUpPage/2/rimailunreadfill.svg"
+                />
+              </div>
+              <div className="mq750:gap-[1.5rem_0rem] flex max-w-full flex-col items-center justify-start gap-[3rem_0rem] self-stretch">
+                <div className="mq750:gap-[1.25rem_0rem] flex flex-col items-center justify-start gap-[2.5rem_0rem] self-stretch">
+                  <h2 className="font-inherit mq450:text-[1.5rem] mq450:leading-[0.875rem] mq750:text-[2rem] mq750:leading-[1.188rem] relative m-0 inline-block text-inherit font-semibold leading-[1.5rem]">
+                    Verify by Mail
+                  </h2>
+                  <div className="text-gray-400 mq450:text-[1.188rem] mq450:leading-[1.75rem] relative self-stretch text-[1.5rem] font-medium leading-[2.219rem]">
+                    <p className="m-0">
+                      Please check your mail and follow the instruction to
+                      activate your account. If you did not receive the mail, or
+                      it has expired, you can resend another one.
+                    </p>
+                  </div>
+                </div>
+                <div className="text-gray-400 flex w-[44.063rem] max-w-full flex-col items-center justify-start gap-[1.5rem_0rem] text-[1.125rem]">
+                  <button className="rounded-8xs hover:bg-blueviolet-100 flex cursor-pointer flex-row items-center justify-center self-stretch bg-primary-colour px-[1.25rem] py-[1.563rem] [border:none]">
+                    <div className="font-barlow mq450:text-[1.188rem] mq450:leading-[1.188rem] relative inline-block whitespace-pre-wrap text-center text-[1.5rem] font-medium leading-[1.5rem] text-neutral-white">
+                      Resend my verification Email
+                    </div>
+                  </button>
+                  <div
+                    className="relative inline-block cursor-pointer font-medium"
+                    onClick={() => {
+                      router.push("/");
+                    }}
+                  >
+                    {`Come back to `}
+                    <span className="text-primary-colour">Home Page</span>
+                  </div>
                 </div>
               </div>
-              <div className="text-gray-400 flex w-[44.063rem] max-w-full flex-col items-center justify-start gap-[1.5rem_0rem] text-[1.125rem]">
-                <button className="rounded-8xs hover:bg-blueviolet-100 flex cursor-pointer flex-row items-center justify-center self-stretch bg-primary-colour px-[1.25rem] py-[1.563rem] [border:none]">
-                  <div className="font-barlow mq450:text-[1.188rem] mq450:leading-[1.188rem] relative inline-block whitespace-pre-wrap text-center text-[1.5rem] font-medium leading-[1.5rem] text-neutral-white">
-                    Resend my verification Email
+            </div>
+          ) : (
+            <div className="rounded-mini mq450:gap-[1rem_0rem] mq800:gap-[2rem_0rem] mq800:pl-[1.5rem] mq800:pr-[1.438rem] mq800:box-border box-border flex h-[33.313rem] w-[50rem] max-w-full shrink-0 flex-col items-start justify-start gap-[4.063rem_0rem] overflow-hidden bg-neutral-white py-[4.25rem] pl-[3rem] pr-[2.938rem]">
+              <div className="flex flex-row items-start justify-center self-stretch">
+                <img
+                  className="relative h-[10.25rem] w-[10.25rem] shrink-0 overflow-hidden"
+                  loading="lazy"
+                  alt=""
+                  src="/images/shop/SignUpPage/2/mdisuccesscircle.svg"
+                />
+              </div>
+              <div className="mq800:gap-[1.75rem_0rem] flex flex-col items-start justify-start gap-[3.5rem_0rem] self-stretch">
+                <div className="flex flex-row items-start justify-center self-stretch px-[1.25rem] py-[0rem]">
+                  <h2 className="font-inherit mq450:text-[1.5rem] mq450:leading-[0.875rem] mq800:text-[2rem] mq800:leading-[1.188rem] relative m-0 inline-block text-inherit font-semibold leading-[1.5rem]">
+                    Account created successfully
+                  </h2>
+                </div>
+                <button className="rounded-8xs hover:bg-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch bg-primary-colour px-[1.25rem] py-[1.563rem] [border:none]">
+                  <div
+                    onClick={() => {
+                      router.push("/");
+                    }}
+                    className="font-barlow mq450:text-[1.188rem] mq450:leading-[1.188rem] relative inline-block text-center text-[1.5rem] font-medium leading-[1.5rem] text-neutral-white"
+                  >
+                    Click here to continue
                   </div>
                 </button>
-                <div
-                  className="relative inline-block cursor-pointer font-medium"
-                  onClick={() => {
-                    router.push("/");
-                  }}
-                >
-                  {`Come back to `}
-                  <span className="text-primary-colour">Home Page</span>
-                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="rounded-mini mq450:gap-[1rem_0rem] mq800:gap-[2rem_0rem] mq800:pl-[1.5rem] mq800:pr-[1.438rem] mq800:box-border box-border flex h-[33.313rem] w-[50rem] max-w-full shrink-0 flex-col items-start justify-start gap-[4.063rem_0rem] overflow-hidden bg-neutral-white py-[4.25rem] pl-[3rem] pr-[2.938rem]">
-            <div className="flex flex-row items-start justify-center self-stretch">
-              <img
-                className="relative h-[10.25rem] w-[10.25rem] shrink-0 overflow-hidden"
-                loading="lazy"
-                alt=""
-                src="/images/shop/SignUpPage/2/mdisuccesscircle.svg"
-              />
-            </div>
-            <div className="mq800:gap-[1.75rem_0rem] flex flex-col items-start justify-start gap-[3.5rem_0rem] self-stretch">
-              <div className="flex flex-row items-start justify-center self-stretch px-[1.25rem] py-[0rem]">
-                <h2 className="font-inherit mq450:text-[1.5rem] mq450:leading-[0.875rem] mq800:text-[2rem] mq800:leading-[1.188rem] relative m-0 inline-block text-inherit font-semibold leading-[1.5rem]">
-                  Account created successfully
-                </h2>
-              </div>
-              <button className="rounded-8xs hover:bg-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch bg-primary-colour px-[1.25rem] py-[1.563rem] [border:none]">
-                <div
-                  onClick={() => {
-                    router.push("/");
-                  }}
-                  className="font-barlow mq450:text-[1.188rem] mq450:leading-[1.188rem] relative inline-block text-center text-[1.5rem] font-medium leading-[1.5rem] text-neutral-white"
-                >
-                  Click here to continue
-                </div>
-              </button>
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
+          )}
+        </main>
+      </div>
+    </>
   );
 };
 
-export default SignUp;
+export default SignUpInfoScreen;
