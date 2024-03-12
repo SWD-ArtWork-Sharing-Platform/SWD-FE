@@ -186,7 +186,17 @@ function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         sweetAlert.alertSuccess("Sign In Successfully", "", 1200, 20);
-        router.push("/");
+
+        if (user.role && user.role[0].toUpperCase() == Role.ADMIN) {
+          router.push("/admin");
+        } else if (user.role && user.role[0].toUpperCase() == Role.MODERATOR) {
+          // push tới page của moderator
+          router.push("/");
+        } else if (user.role && user.role[0].toUpperCase() == Role.CUSTOMER) {
+          router.push("/");
+        } else if (user.role && user.role[0].toUpperCase() == Role.CREATOR) {
+          router.push("/");
+        }
       } else {
         disableLoading();
         sweetAlert.alertFailed(
@@ -199,6 +209,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.log(error);
       disableLoading();
+
       sweetAlert.alertFailed(
         `Login failed.`,
         ` Please check your email and password and try again.`,
