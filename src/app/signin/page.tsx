@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import SignIn from "./SignIn";
+import SignInAuth from "./SignInAuth";
 
 export const metadata: Metadata = {
   title: "Artvista",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function SignupInfo() {
   return (
     <>
-      <SignIn />
+      <SignInAuth />
     </>
   );
 }
