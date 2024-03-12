@@ -179,7 +179,7 @@ const axiosClientFactory = new AxiosClientFactory();
 const axiosInstances = {
   auth: axiosClientFactory.getAxiosClient(AxiosClientFactoryEnum.AUTH),
   management: axiosClientFactory.getAxiosClient(AxiosClientFactoryEnum.MANAGEMENT),
-  market: axiosClientFactory.getAxiosClient(AxiosClientFactoryEnum.MANAGEMENT),
+  market: axiosClientFactory.getAxiosClient(AxiosClientFactoryEnum.MARKET),
 //   gateway: axiosClientFactory.getAxiosClient(AxiosClientFactoryEnum.GATEWAY)
 };
 

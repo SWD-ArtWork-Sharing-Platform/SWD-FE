@@ -1,6 +1,6 @@
 import ShopLayout from "@/components/ShopLayout/ShopLayout";
 import { Metadata } from "next";
-import Discover from "./Discover";
+import DiscoverProvider from "./pgeProvider";
 
 export const metadata: Metadata = {
   title: "Artvista",
@@ -10,11 +10,7 @@ export const metadata: Metadata = {
 export default function DiscoverPage() {
   return (
     <>
-      <ShopLayout>
-        <section>
-          <Discover />
-        </section>
-      </ShopLayout>
+      <DiscoverProvider />
     </>
   );
 }

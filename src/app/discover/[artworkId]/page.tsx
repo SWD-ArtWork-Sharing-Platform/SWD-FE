@@ -1,6 +1,5 @@
 import { Metadata } from "next";
-import ShopLayout from "@/components/ShopLayout/ShopLayout";
-import ArtworkDetail from "./ArtworkDetail";
+import ArtworkDetailProvider from "./ArtworkDetailProvider";
 
 export const metadata: Metadata = {
   title: "Artvista",
@@ -10,11 +9,7 @@ export const metadata: Metadata = {
 export default function ArtworkDetailPage() {
   return (
     <>
-      <ShopLayout>
-        <section>
-          <ArtworkDetail />
-        </section>
-      </ShopLayout>
+      <ArtworkDetailProvider />
     </>
   );
 }
